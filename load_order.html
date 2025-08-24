@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arma 3 Loadorder Generator</title>
+</head>
+<body>
+    <h1>Arma 3 Loadorder Generator</h1>
+    <div class="instructions">
+        <h2>Instructions</h2>
+        <p>1. Upload your Arma 3 modpack HTML file using the button below.</p>
+        <p>2. Click "Generate Loadorder" to process the file.</p>
+        <p>3. The loadorder command line will be displayed below.</p>
+    </div>
+    <input type="file" id="fileInput" accept=".html">
+    <button onclick="generateLoadorder()">Generate Loadorder</button>
+    <div id="result"></div>
+
+    <script>
+        function generateLoadorder() {
+            const fileInput = document.getElementById('fileInput');
+            const resultDiv = document.getElementById('result');
+
+            if (fileInput.files.length === 0) {
+                resultDiv.textContent = 'Please select a file.';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                const htmlContent = e.target.result;
+                const modNames = extractModNames(htmlContent);
+
+                if (modNames.length === 0) {
+                    resultDiv.textContent = 'No mod names found in the HTML file. You may need to adjust the extractModNames function to match your file\'s structure.';
+                    return;
+                }
+
+                const loadorder = modNames.map(name => `@${name}`).join(';');
+                resultDiv.textContent = loadorder;
+            };
+
+            reader.onerror = function() {
+                resultDiv.textContent = 'Error reading the file.';
+            };
+
+            reader.readAsText(file);
+        }
+
+        function extractModNames(htmlContent) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlContent, 'text/html');
+            let modNames = [];
+            const elements = doc.querySelectorAll('[data-type="DisplayName"]');
+            modNames = Array.from(elements).map(el => el.textContent.trim());
+            return modNames;
+        }
+    </script>
+</body>
+</html>
+
