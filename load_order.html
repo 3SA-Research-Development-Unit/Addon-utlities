@@ -1,64 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arma 3 Loadorder Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arma 3 Loadorder Generator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <h1>Arma 3 Loadorder Generator</h1>
-    <div class="instructions">
-        <h2>Instructions</h2>
-        <p>1. Upload your Arma 3 modpack HTML file using the button below.</p>
-        <p>2. Click "Generate Loadorder" to process the file.</p>
-        <p>3. The loadorder command line will be displayed below.</p>
+<body class="bg-black text-gray-800 font-sans">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-amber-300 to-yellow-500 py-6 text-center shadow-lg">
+    <h1 class="text-4xl md:text-5xl font-light text-black tracking-wide drop-shadow-sm">
+      Arma 3 Loadorder Generator
+    </h1>
+    <p class="mt-2 text-sm md:text-base text-gray-700 italic">
+      Quickly generate a command-line load order from your modpack HTML
+    </p>
+  </header>
+
+  <!-- Main Content -->
+  <main class="mx-auto max-w-3xl mt-8 px-6">
+    <div class="rounded-2xl bg-white p-6 shadow-md">
+      <!-- Instructions -->
+      <div class="mb-6">
+        <h2 class="text-2xl font-semibold mb-2">Instructions</h2>
+        <ol class="list-decimal list-inside text-gray-700 space-y-1">
+          <li>Upload your Arma 3 modpack HTML file using the button below.</li>
+          <li>Click <span class="font-semibold">Generate Loadorder</span> to process the file.</li>
+          <li>Your loadorder command line will appear below.</li>
+        </ol>
+      </div>
+
+      <!-- File Upload + Button -->
+      <div class="flex flex-col sm:flex-row items-center gap-4">
+        <input type="file" id="fileInput" accept=".html"
+          class="w-full sm:w-auto rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm shadow-sm focus:border-amber-400 focus:ring focus:ring-amber-300 focus:ring-opacity-50" />
+        
+        <button onclick="generateLoadorder()"
+          class="rounded-lg bg-amber-400 px-4 py-2 font-medium text-black transition-transform duration-150 hover:scale-105 hover:bg-amber-500 shadow-md">
+          Generate Loadorder
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div id="result" class="mt-6 rounded-lg bg-gray-100 p-4 text-sm font-mono text-gray-800 whitespace-pre-wrap shadow-inner"></div>
+
+      <a href="/"><div class="rounded-lg bg-amber-400 mt-4 text-black p-2 w-fit">Go back</div></a>
     </div>
-    <input type="file" id="fileInput" accept=".html">
-    <button onclick="generateLoadorder()">Generate Loadorder</button>
-    <div id="result"></div>
+  </main>
 
-    <script>
-        function generateLoadorder() {
-            const fileInput = document.getElementById('fileInput');
-            const resultDiv = document.getElementById('result');
+  <!-- Footer -->
+  <footer class="mt-12 py-6 text-center text-sm text-gray-500 border-t">
+    © 2025 Hayami · Built with ❤️
+  </footer>
 
-            if (fileInput.files.length === 0) {
-                resultDiv.textContent = 'Please select a file.';
-                return;
-            }
+  <script>
+    function generateLoadorder() {
+      const fileInput = document.getElementById('fileInput');
+      const resultDiv = document.getElementById('result');
 
-            const file = fileInput.files[0];
-            const reader = new FileReader();
+      if (fileInput.files.length === 0) {
+        resultDiv.textContent = '⚠️ Please select a file.';
+        return;
+      }
 
-            reader.onload = function(e) {
-                const htmlContent = e.target.result;
-                const modNames = extractModNames(htmlContent);
+      const file = fileInput.files[0];
+      const reader = new FileReader();
 
-                if (modNames.length === 0) {
-                    resultDiv.textContent = 'No mod names found in the HTML file. You may need to adjust the extractModNames function to match your file\'s structure.';
-                    return;
-                }
+      reader.onload = function(e) {
+        const htmlContent = e.target.result;
+        const modNames = extractModNames(htmlContent);
 
-                const loadorder = modNames.map(name => `@${name}`).join(';');
-                resultDiv.textContent = loadorder;
-            };
-
-            reader.onerror = function() {
-                resultDiv.textContent = 'Error reading the file.';
-            };
-
-            reader.readAsText(file);
+        if (modNames.length === 0) {
+          resultDiv.textContent = '❌ No mod names found in the HTML file. You may need to adjust the extractModNames function to match your file structure.';
+          return;
         }
 
-        function extractModNames(htmlContent) {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlContent, 'text/html');
-            let modNames = [];
-            const elements = doc.querySelectorAll('[data-type="DisplayName"]');
-            modNames = Array.from(elements).map(el => el.textContent.trim());
-            return modNames;
-        }
-    </script>
+        const loadorder = modNames.map(name => `@${name}`).join(';');
+        resultDiv.textContent = loadorder;
+      };
+
+      reader.onerror = function() {
+        resultDiv.textContent = '❌ Error reading the file.';
+      };
+
+      reader.readAsText(file);
+    }
+
+    function extractModNames(htmlContent) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(htmlContent, 'text/html');
+      const elements = doc.querySelectorAll('[data-type="DisplayName"]');
+      return Array.from(elements).map(el => el.textContent.trim());
+    }
+  </script>
 </body>
 </html>
-
